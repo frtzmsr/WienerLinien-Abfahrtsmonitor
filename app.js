@@ -48,34 +48,39 @@ async function loadDepartures(diva, lineName, towards) {
 
     if (!json.data || !json.data.monitors) return [];
 
+    const result = [];
+
     for (let i = 0; i < json.data.monitors.length; i++) {
       const lines = json.data.monitors[i].lines;
 
       for (let j = 0; j < lines.length; j++) {
         if (lines[j].name === lineName) {
           const deps = lines[j].departures.departure;
-          const result = [];
 
           for (let k = 0; k < deps.length; k++) {
             if (
               deps[k].vehicle &&
-              deps[k].vehicle.towards &&
-              deps[k].vehicle.towards.indexOf(towards) !== -1
+              deps[k].vehicle.towards === towards
             ) {
               result.push(deps[k]);
             }
-            if (result.length === 3) break;
           }
-
-          return result;
         }
       }
     }
+
+    // nach Countdown sortieren (sicher ist sicher)
+    result.sort(function (a, b) {
+      return a.departureTime.countdown - b.departureTime.countdown;
+    });
+
+    // max. 3 anzeigen
+    return result.slice(0, 3);
+
   } catch (e) {
     console.error("API Fehler", e);
+    return [];
   }
-
-  return [];
 }
 
 // ==========================
