@@ -7,29 +7,29 @@ const stations = [
     name: "Brüßlgasse",
     diva: 60200179,
     entries: [
-      { line: "48A", towards: "Ring, Volkstheater U" },
-      { line: "48A", towards: "Klinik Penzing" }
+      { label: "48A → Ring, Volkstheater U", line: "48A" },
+      { label: "48A → Klinik Penzing", line: "48A" }
     ]
   },
   {
     name: "Panikengasse",
     diva: 60200941,
     entries: [
-      { line: "9", towards: "Westbahnhof" }
+      { label: "9 → Westbahnhof", line: "9" }
     ]
   },
   {
     name: "Possingergasse",
     diva: 60201014,
     entries: [
-      { line: "10A", towards: "Heiligenstadt" }
+      { label: "10A → Heiligenstadt", line: "10A" }
     ]
   },
   {
     name: "Feßtgasse",
     diva: 60200446,
     entries: [
-      { line: "46", towards: "Ring, Volkstheater" }
+      { label: "46 → Ring, Volkstheater", line: "46" }
     ]
   }
 ];
@@ -56,6 +56,7 @@ async function loadDepartures(diva, lineName) {
       for (let j = 0; j < lines.length; j++) {
         if (lines[j].name === lineName) {
           const deps = lines[j].departures.departure;
+
           for (let k = 0; k < deps.length; k++) {
             result.push(deps[k]);
           }
@@ -88,7 +89,6 @@ async function refresh() {
 
     const stationDiv = document.createElement("div");
     stationDiv.className = "station";
-
     stationDiv.innerHTML =
       '<div class="station-name">' + station.name + "</div>";
 
@@ -97,15 +97,12 @@ async function refresh() {
 
       const deps = await loadDepartures(
         station.diva,
-        entry.line,
-        entry.towards
+        entry.line
       );
 
       let html =
         '<div class="line">' +
-        entry.line +
-        " → " +
-        entry.towards +
+        entry.label +
         "</div>";
 
       if (deps.length === 0) {
