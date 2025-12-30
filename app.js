@@ -44,7 +44,7 @@ function escapeHtml(s) {
 // ==========================
 
 async function fetchStationMap(diva) {
-  const url = "https://www.wienerlinien.at/ogd_realtime/monitor?diva=" + diva;
+  const url = "https://wienerlinien-proxy.people-02-reasons.workers.dev/?diva=" + diva;
 
   const res = await fetch(url);
   const json = await res.json();
