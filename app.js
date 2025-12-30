@@ -1,3 +1,4 @@
+alert("app.js läuft");
 const stations = [
   {
     name: "Brüßlgasse",
