@@ -38,7 +38,7 @@ const stations = [
 // Wiener Linien API
 // ==========================
 
-async function loadDepartures(diva, lineName, towards) {
+async function loadDepartures(diva, lineName) {
   const url =
     "https://www.wienerlinien.at/ogd_realtime/monitor?diva=" + diva;
 
@@ -54,13 +54,8 @@ async function loadDepartures(diva, lineName, towards) {
       const lines = json.data.monitors[i].lines;
 
       for (let j = 0; j < lines.length; j++) {
-        // HIER ist der entscheidende Vergleich
-        if (
-          lines[j].name === lineName &&
-          lines[j].towards === towards
-        ) {
+        if (lines[j].name === lineName) {
           const deps = lines[j].departures.departure;
-
           for (let k = 0; k < deps.length; k++) {
             result.push(deps[k]);
           }
