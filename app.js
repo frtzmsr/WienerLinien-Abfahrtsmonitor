@@ -1,7 +1,3 @@
-// ==========================
-// Konfiguration
-// ==========================
-
 const PROXY =
   "https://wienerlinien-proxy.people-02-reasons.workers.dev/";
 
@@ -9,58 +5,38 @@ const stations = [
   {
     name: "Brüßlgasse",
     diva: 60200179,
-    entries: [
-      { line: "48A", towards: "Ring, Volkstheater U" },
-      { line: "48A", towards: "Klinik Penzing" }
-    ]
+    lines: ["48A"]
   },
   {
     name: "Panikengasse",
     diva: 60200941,
-    entries: [
-      { line: "9", towards: "Westbahnhof" }
-    ]
+    lines: ["9"]
   },
   {
     name: "Possingergasse",
     diva: 60201014,
-    entries: [
-      { line: "10A", towards: "Heiligenstadt" }
-    ]
+    lines: ["10A"]
   },
   {
     name: "Feßtgasse",
     diva: 60200446,
-    entries: [
-      { line: "46", towards: "Ring, Volkstheater" }
-    ]
+    lines: ["46"]
   }
 ];
 
-// ==========================
-// API: alle Abfahrten holen
-// ==========================
-
 async function fetchAllDepartures(diva) {
-  const url = PROXY + "?diva=" + diva;
-
-  const res = await fetch(url);
+  const res = await fetch(PROXY + "?diva=" + diva);
   const json = await res.json();
-
-  if (!json.data || !json.data.monitors) return [];
+  if (!json.data?.monitors) return [];
 
   const all = [];
 
-  for (const monitor of json.data.monitors) {
-    if (!monitor.lines) continue;
-
-    for (const line of monitor.lines) {
-      const deps = line.departures?.departure || [];
-
-      for (const d of deps) {
+  for (const m of json.data.monitors) {
+    for (const l of m.lines || []) {
+      for (const d of l.departures?.departure || []) {
         all.push({
-          line: line.name,
-          towards: line.towards,
+          line: l.name,
+          towards: l.towards,
           countdown: d.departureTime.countdown
         });
       }
@@ -71,50 +47,30 @@ async function fetchAllDepartures(diva) {
   return all;
 }
 
-// ==========================
-// Rendering
-// ==========================
-
 async function refresh() {
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
+  document.getElementById("weather").innerText = "Wiener Linien live…";
 
-  document.getElementById("weather").innerText =
-    "Wiener Linien live…";
-
-  for (const station of stations) {
+  for (const s of stations) {
     const box = document.createElement("div");
     box.className = "station";
-    box.innerHTML =
-      `<div class="station-name">${station.name}</div>`;
+    box.innerHTML = `<div class="station-name">${s.name}</div>`;
 
-    let departures = [];
-    try {
-      departures = await fetchAllDepartures(station.diva);
-    } catch (e) {
-      box.innerHTML += `<div class="departure">API Fehler</div>`;
-      grid.appendChild(box);
-      continue;
-    }
+    const deps = await fetchAllDepartures(s.diva);
 
-    for (const entry of station.entries) {
-      box.innerHTML +=
-        `<div class="line">${entry.line} → ${entry.towards}</div>`;
+    for (const line of s.lines) {
+      const lineDeps = deps.filter(d => d.line === line).slice(0, 3);
 
-      const matches = departures
-        .filter(d =>
-          d.line === entry.line &&
-          d.towards === entry.towards
-        )
-        .slice(0, 3);
-
-      if (matches.length === 0) {
+      if (lineDeps.length === 0) {
         box.innerHTML +=
-          `<div class="departure">keine Abfahrten</div>`;
+          `<div class="line">${line}</div>
+           <div class="departure">keine Abfahrten</div>`;
       } else {
-        for (const m of matches) {
+        for (const d of lineDeps) {
           box.innerHTML +=
-            `<div class="departure">${m.countdown} min</div>`;
+            `<div class="line">${line} → ${d.towards}</div>
+             <div class="departure">${d.countdown} min</div>`;
         }
       }
     }
@@ -122,10 +78,6 @@ async function refresh() {
     grid.appendChild(box);
   }
 }
-
-// ==========================
-// Start + Auto-Refresh
-// ==========================
 
 refresh();
 setInterval(refresh, 60000);
