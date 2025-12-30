@@ -59,7 +59,8 @@ async function loadDepartures(diva, lineName, towards) {
           for (let k = 0; k < deps.length; k++) {
             if (
               deps[k].vehicle &&
-              deps[k].vehicle.towards === towards
+              deps[k].vehicle.towards &&
+              deps[k].vehicle.towards.indexOf(towards) !== -1
             ) {
               result.push(deps[k]);
             }
